@@ -9,6 +9,8 @@ namespace AppSingleton
     static internal class Program
     {
         private const uint Restore = 9;
+        private const uint ForceMinimize = 11;
+
         private const int AltKeyCode = 0xA4;
         private const int ExtendedKey = 0x1;
         private const int KeyUp = 0x2;
@@ -52,9 +54,12 @@ namespace AppSingleton
                     continue;
                 }
 
-                // Check if window already has focus
+                // If window already has focus, minimize it
                 if (process.MainWindowHandle == GetForegroundWindow())
+                {
+                    ShowWindow(process.MainWindowHandle, ForceMinimize);
                     return;
+                }
 
                 // If window minimized, show it
                 if (IsIconic(process.MainWindowHandle))
