@@ -8,13 +8,25 @@ namespace AppSingleton
 {
     static internal class Program
     {
-        private const int SwShownormal = 1;
+        private const uint Restore = 9;
+        private const int AltKeyCode = 0xA4;
+        private const int ExtendedKey = 0x1;
+        private const int KeyUp = 0x2;
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static private extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
+        static private extern bool ShowWindow(IntPtr hwnd, uint nCmdShow);
 
         [DllImport("user32.dll", SetLastError = true)]
         static private extern bool SetForegroundWindow(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        static private extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static private extern bool IsIconic(IntPtr handle);
+
+        [DllImport("user32.dll")]
+        static private extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
         static private void Main(string[] args)
         {
@@ -31,17 +43,33 @@ namespace AppSingleton
             {
                 try
                 {
-                    if (process.MainModule.FileName != args[0]) continue;
-
-                    ShowWindow(process.MainWindowHandle, SwShownormal);
-                    SetForegroundWindow(process.MainWindowHandle);
-                    return;
+                    // Find the process by executable filename
+                    if (process.MainModule.FileName != args[0])
+                        continue;
                 }
-                catch (Win32Exception)
+                catch (Win32Exception) // Handle unauthorized access
                 {
+                    continue;
                 }
+
+                // Check if window already has focus
+                if (process.MainWindowHandle == GetForegroundWindow())
+                    return;
+
+                // If window minimized, show it
+                if (IsIconic(process.MainWindowHandle))
+                    ShowWindow(process.MainWindowHandle, Restore);
+
+                // Hack for SetForegroundWindow : press Alt before
+                keybd_event(AltKeyCode, 0x45, ExtendedKey | 0, 0);
+                keybd_event(AltKeyCode, 0x45, ExtendedKey | KeyUp, 0);
+
+                // Set the targeted process window to foreground
+                SetForegroundWindow(process.MainWindowHandle);
+                return;
             }
 
+            // If process is not currently running, start it
             string arguments = "";
             if (args.Length > 1)
             {
