@@ -54,16 +54,16 @@ namespace AppSingleton
                     continue;
                 }
 
+                // If window minimized, restore it
+                if (IsIconic(process.MainWindowHandle))
+                    ShowWindow(process.MainWindowHandle, Restore);
+
                 // If window already has focus, minimize it
-                if (process.MainWindowHandle == GetForegroundWindow())
+                else if (process.MainWindowHandle == GetForegroundWindow())
                 {
                     ShowWindow(process.MainWindowHandle, ForceMinimize);
                     return;
                 }
-
-                // If window minimized, show it
-                if (IsIconic(process.MainWindowHandle))
-                    ShowWindow(process.MainWindowHandle, Restore);
 
                 // Hack for SetForegroundWindow : press Alt before
                 keybd_event(AltKeyCode, 0x45, ExtendedKey | 0, 0);
