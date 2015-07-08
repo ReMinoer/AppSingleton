@@ -65,7 +65,9 @@ namespace AppSingleton
                     return;
                 }
 
-                // Hack for SetForegroundWindow : press Alt before
+                // Hack for SetForegroundWindow : press Alt before (two times to prevent unwanted Alt usages)
+                keybd_event(AltKeyCode, 0x45, ExtendedKey | 0, 0);
+                keybd_event(AltKeyCode, 0x45, ExtendedKey | KeyUp, 0);
                 keybd_event(AltKeyCode, 0x45, ExtendedKey | 0, 0);
                 keybd_event(AltKeyCode, 0x45, ExtendedKey | KeyUp, 0);
 
